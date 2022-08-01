@@ -2,6 +2,7 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
+const cors = require('cors') 
 
 const formatMessage = require('./helpers/formatDate')
 const {getActiveUser, exitRoom, newUser, getIndividualRoomUsers} = require('./helpers/userHelper')
@@ -9,8 +10,12 @@ const {getActiveUser, exitRoom, newUser, getIndividualRoomUsers} = require('./he
 
 
 const app = express()
+app.use(cors({
+    origin: '*'
+}))
+
 const server = http.createServer(app)
-const io = socketio(server)
+const io = socketio(server, {cors: { origin: '*', methods: ['GET', 'POST']}}) 
 
 app.use(express.static(path.join(__dirname, 'dist')))
 

@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -6,6 +6,7 @@ import ChatPage
 import Html exposing (..)
 import Html.Attributes exposing (alt, autocomplete, class, for, href, id, name, placeholder, required, src, target, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Json.Encode as Encode
 import Types exposing (..)
 import Url exposing (Url)
 import Url.Builder as Builder
@@ -23,6 +24,18 @@ parser =
 type Route
     = HomeR
     | ChatR
+
+
+port join_room : Encode.Value -> Cmd msg
+
+
+encode_login_form : LoginForm -> Encode.Value
+encode_login_form login_form =
+    Encode.object
+        [ ( "username", Encode.string login_form.username )
+        , ( "email", Encode.string login_form.email )
+        , ( "chatRoom", Encode.string <| chatRoomToString login_form.chatRoom )
+        ]
 
 
 type alias Model =
@@ -44,6 +57,7 @@ type Msg
     | UpdateEmail String
     | UpdateUsername String
     | UpdateSelection String
+    | ChatPageMessages ChatPage.Msg
 
 
 chatRoomToString : ChatRoom -> String
@@ -157,7 +171,7 @@ view model =
                     ]
 
                 ChatPage chat_model ->
-                    [ ChatPage.view chat_model ]
+                    [ ChatPage.view chat_model |> Html.map ChatPageMessages ]
     in
     { title = "Chat App"
     , body = page_view
@@ -170,6 +184,7 @@ update msg model =
         LoginMsg login_form ->
             -- http://localhost:3000/chat.html?email=asdf%40gmailc.om&username=asdf&room=Business
             let
+                -- "/chat" ++ "/" ++ "email=" ++ login_form.email ++ "&username=" ++ login_form.username ++ "&room=" ++ chatRoomToString login_form.chatRoom
                 format_url =
                     Builder.absolute
                         [ "chat" ]
@@ -178,9 +193,13 @@ update msg model =
                         , Builder.string "room" (chatRoomToString login_form.chatRoom)
                         ]
 
-                -- "/chat" ++ "/" ++ "email=" ++ login_form.email ++ "&username=" ++ login_form.username ++ "&room=" ++ chatRoomToString login_form.chatRoom
+                cmds =
+                    Cmd.batch
+                        [ Nav.pushUrl model.key format_url
+                        , join_room (encode_login_form login_form)
+                        ]
             in
-            ( { model | page = ChatPage <| ChatPage.init login_form }, Nav.pushUrl model.key format_url )
+            ( { model | page = ChatPage <| ChatPage.init login_form }, cmds )
 
         UpdateEmail new_email ->
             let
@@ -213,7 +232,15 @@ update msg model =
             ( { model | login_form = updated_login_form }, Cmd.none )
 
         ChangedUrl url ->
-            ( model, Cmd.none )
+            case Parser.parse parser url of
+                Just HomeR ->
+                    ( { model | page = HomePage, login_form = init_login_form }, Cmd.none )
+
+                Just ChatR ->
+                    ( { model | page = ChatPage (ChatPage.init init_login_form) }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ClickedLink urlRequest ->
             case urlRequest of
@@ -223,10 +250,30 @@ update msg model =
                 Browser.Internal url ->
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
+        ChatPageMessages chat_pg_msg ->
+            case model.page of
+                ChatPage chat_model ->
+                    toChatPage model (ChatPage.update chat_pg_msg chat_model)
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+toChatPage : Model -> ( ChatPage.Model, Cmd ChatPage.Msg ) -> ( Model, Cmd Msg )
+toChatPage model ( chat_model, cmd ) =
+    ( { model | page = ChatPage chat_model }
+    , Cmd.map ChatPageMessages cmd
+    )
+
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    case model.page of
+        ChatPage chat_model ->
+            ChatPage.subscriptions chat_model |> Sub.map ChatPageMessages
+
+        _ ->
+            Sub.none
 
 
 init_login_form : LoginForm
