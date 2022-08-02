@@ -64,25 +64,25 @@ chatRoomToString : ChatRoom -> String
 chatRoomToString chat_room =
     case chat_room of
         JustCats ->
-            "JustCats"
+            "cats"
 
         Business ->
             "Business"
 
         Sports ->
-            "Sports"
+            "Sport"
 
         Technology ->
             "Technology"
 
         InternationalNews ->
-            "International News"
+            "news"
 
 
 login_form_view : LoginForm -> Html Msg
 login_form_view login_form =
-    form [ onSubmit <| LoginMsg login_form ]
-        [ div [ class "form-control" ]
+    form [ onSubmit <| LoginMsg login_form, class "flex flex-col space-y-2" ]
+        [ div [ class "space-x-3 flex items-center" ]
             [ label [ for "email" ] [ text "Email Address" ]
             , input
                 [ type_ "email"
@@ -92,10 +92,11 @@ login_form_view login_form =
                 , required True
                 , value login_form.email
                 , onInput UpdateEmail
+                , class "bg-gray-300 px-3 py-2 rounded-md focus:bg-gray-100"
                 ]
                 []
             ]
-        , div [ class "from-control" ]
+        , div [ class "space-x-3 flex items-center" ]
             [ label [ for "username" ] [ text "Username" ]
             , input
                 [ type_ "text"
@@ -105,14 +106,16 @@ login_form_view login_form =
                 , required True
                 , value login_form.username
                 , onInput UpdateUsername
+                , class "bg-gray-300 px-3 py-2 rounded-md focus:bg-gray-100"
                 ]
                 []
             ]
-        , div [ class "form-control" ]
+        , div [ class "space-x-3 flex items-center" ]
             [ label [ for "room" ] [ text "Chat Channel" ]
             , select
                 [ name "room"
                 , id "room"
+                , class "bg-gray-300 px-3 py-2 rounded-md "
                 , value <| chatRoomToString login_form.chatRoom
                 , onInput UpdateSelection
                 ]
@@ -125,7 +128,7 @@ login_form_view login_form =
             ]
         , div [ class "" ]
             [ button
-                [ type_ "submit", class "btn" ]
+                [ type_ "submit", class "bg-gray-700 text-gray-100 hover:bg-gray-900 px-2 py-1 rounded-lg" ]
                 [ text "Login to Chat" ]
             ]
         ]
@@ -160,12 +163,12 @@ view model =
             case model.page of
                 HomePage ->
                     [ div
-                        [ class "join-contianer" ]
+                        [ class "max-w-xl mt-10 mx-auto space-y-3" ]
                         [ header
-                            [ class "join-header" ]
-                            [ h1 [] [ text "Chat App" ] ]
+                            [ class "rounded-t-md bg-gray-900 px-2 py-1 " ]
+                            [ h1 [ class "text-white text-lg" ] [ text "Chat App" ] ]
                         , main_
-                            [ class "join-main" ]
+                            [ class "px-2" ]
                             [ login_form_view model.login_form ]
                         ]
                     ]
