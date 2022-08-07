@@ -81,8 +81,8 @@ chatRoomToString chat_room =
 
 login_form_view : LoginForm -> Html Msg
 login_form_view login_form =
-    form [ onSubmit <| LoginMsg login_form, class "flex flex-col space-y-2" ]
-        [ div [ class "space-x-3 flex items-center" ]
+    form [ onSubmit <| LoginMsg login_form, class "flex flex-col space-y-3 " ]
+        [ div [ class "space-y-3 flex flex-col items-start" ]
             [ label [ for "email" ] [ text "Email Address" ]
             , input
                 [ type_ "email"
@@ -96,7 +96,7 @@ login_form_view login_form =
                 ]
                 []
             ]
-        , div [ class "space-x-3 flex items-center" ]
+        , div [ class "space-y-3 flex flex-col " ]
             [ label [ for "username" ] [ text "Username" ]
             , input
                 [ type_ "text"
@@ -110,12 +110,12 @@ login_form_view login_form =
                 ]
                 []
             ]
-        , div [ class "space-x-3 flex items-center" ]
-            [ label [ for "room" ] [ text "Chat Channel" ]
+        , div [ class "space-y-3 flex flex-col" ]
+            [ div [] [ label [ for "room" ] [ text "Chat Channel" ] ]
             , select
                 [ name "room"
                 , id "room"
-                , class "bg-gray-300 px-3 py-2 rounded-md "
+                , class "bg-gray-300 px-5 py-3 rounded-md"
                 , value <| chatRoomToString login_form.chatRoom
                 , onInput UpdateSelection
                 ]
@@ -126,9 +126,9 @@ login_form_view login_form =
                 , option [ value "cats" ] [ text "Just Cats" ]
                 ]
             ]
-        , div [ class "" ]
+        , div [ class "py-3" ]
             [ button
-                [ type_ "submit", class "bg-gray-700 text-gray-100 hover:bg-gray-900 px-2 py-1 rounded-lg" ]
+                [ type_ "submit", class "bg-indigo-800 text-gray-100 shadow-lg hover:bg-indigo-600 px-5 py-3 rounded-lg" ]
                 [ text "Login to Chat" ]
             ]
         ]
@@ -156,17 +156,26 @@ string_to_chat_room s =
             JustCats
 
 
+page_scaffold : List (Html msg) -> Html msg
+page_scaffold children =
+    div [ class "max-w-xl mt-10 mx-auto space-y-3" ] children
+
+
+app_header : Html Msg
+app_header =
+    header
+        [ class "rounded-t-md bg-indigo-800 px-2 py-1 " ]
+        [ h1 [ class "text-white text-lg" ] [ text "Chat App" ] ]
+
+
 view : Model -> Browser.Document Msg
 view model =
     let
         page_view =
             case model.page of
                 HomePage ->
-                    [ div
-                        [ class "max-w-xl mt-10 mx-auto space-y-3" ]
-                        [ header
-                            [ class "rounded-t-md bg-gray-900 px-2 py-1 " ]
-                            [ h1 [ class "text-white text-lg" ] [ text "Chat App" ] ]
+                    [ page_scaffold
+                        [ app_header
                         , main_
                             [ class "px-2" ]
                             [ login_form_view model.login_form ]
@@ -174,7 +183,14 @@ view model =
                     ]
 
                 ChatPage chat_model ->
-                    [ ChatPage.view chat_model |> Html.map ChatPageMessages ]
+                    [ page_scaffold
+                        [ app_header
+                        , main_
+                            []
+                            [ ChatPage.view chat_model |> Html.map ChatPageMessages
+                            ]
+                        ]
+                    ]
     in
     { title = "Chat App"
     , body = page_view
@@ -240,7 +256,7 @@ update msg model =
                     ( { model | page = HomePage, login_form = init_login_form }, Cmd.none )
 
                 Just ChatR ->
-                    ( { model | page = ChatPage (ChatPage.init init_login_form) }, Cmd.none )
+                    ( { model | page = ChatPage (ChatPage.init model.login_form) }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
