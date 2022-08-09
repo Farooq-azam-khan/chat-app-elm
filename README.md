@@ -2,6 +2,9 @@
 
 ## Demo
 
-[![login-form](/demo-images/loginpage.png)]
-[![join-room](/demo-images/join-room-image.png)]
-[![commenting](/demo-images/commenting-with-other-users.png)]
+### Login form 
+![login-form](/demo-images/loginpage.png)
+### Joining 
+![join-room](/demo-images/join-room-image.png)
+### Commenting 
+![commenting](/demo-images/commenting-with-other-users.png)
