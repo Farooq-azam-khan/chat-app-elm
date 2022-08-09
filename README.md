@@ -1,5 +1,7 @@
 # Elm Chat App
 
-## TODO
-* [ ] styling page 
-* [ ] elm flags to read page login if at `/chat?...` or redirect if just accessing `/chat` to login
+## Demo
+
+[![login-form](/demo-images/loginpage.png)]
+[![join-room](/demo-images/join-room-image.png)]
+[![commenting](/demo-images/commenting-with-other-users.png)]
